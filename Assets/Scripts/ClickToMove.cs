@@ -3,94 +3,216 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
-public class ClickToMove : MonoBehaviour
-{
-    [Header("Stats")]
-    public float attackDinstance;
-    public float attackRate;
-    private float nextAttack;
+public class ClickToMove : MonoBehaviour {
+	[Header("Stats")]
+	public float attackDistance;
+	public float attackRate;
+	private float nextAttack;
 
-    private NavMeshAgent navMeshAgent;
-    private Animator anim;
+	//NAV MESH
+	private NavMeshAgent navMeshAgent;
+	private Animator anim;
 
-    private Transform targetEnemy;
-    private bool enemyClicked;
-    private bool walking;
-    private void Awake()
-    {
-        anim = GetComponent<Animator>();
-        navMeshAgent = GetComponent<NavMeshAgent>();
-    }
+	//ENEMY
+	private Transform targetedEnemy;
+	private bool enemyClicked;
+	private bool walking;
 
+	//OBJECTS
+	private Transform clickedObject;
+	private bool objectClicked;
 
-    // Update is called once per frame
-    void Update()
-    {
-        // storing the current position of the mouse click and this position is where the player goes
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        RaycastHit hit;
-        // in right click
-        if (Input.GetButtonDown("Fire2"))
-        {
-            if (Physics.Raycast(ray, out hit, 1000))
-            {
-                if (hit.collider.tag == "Enemy")
-                {
-                    // take info of the current position (x,y,x,rotation e.t.c)
-                    targetEnemy = hit.transform;
-                    enemyClicked = true;
-                    print("ENEMY HITTED");
-                }
-                else
-                {
-                    walking = true;
-                    enemyClicked = false;
-                    navMeshAgent.isStopped = false;
-                    navMeshAgent.destination = hit.point;
-                }
-            }
-        }
-        if (enemyClicked)
-        {
-            MoveAndAttack();
-        }
-        if (navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance)
-        {
-            walking = false;
-        }
-        else
-        {
-            walking = true;
-        }
-       // anim.SetBool("isWalking",walking);
-    }
+	//DOUBLE CLICK
+	private bool oneClick;
+	private bool doubleClick;
+	private float timerForDoubleClick;
+	private float delay = 0.25f;
 
-    void MoveAndAttack()
-    {
-        if (targetEnemy == null)
-        {
-            return;
-        }
-        navMeshAgent.destination = targetEnemy.position;
+	void Awake () 
+	{
+		anim = GetComponent<Animator>();
+		//anim = GetComponentInChildren<Animator>();
+		navMeshAgent = GetComponent<NavMeshAgent>();
+	}
+	
+	// Update is called once per frame
+	void Update () 
+	{
+		Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+		RaycastHit hit;
 
-        if (navMeshAgent.remainingDistance > attackDinstance)
-        {
-            navMeshAgent.isStopped = false;
-            walking = true;
-        }
-        else
-        {
-            transform.LookAt(targetEnemy);
-            // direction we want to attack
-            Vector3 ditToAttack = targetEnemy.transform.position - transform.position;
+		CheckDoubleClick();
 
-            if (Time.time > nextAttack)
-            {
-                nextAttack = Time.time + attackRate;
-            }
-            navMeshAgent.isStopped = true;
-            walking = false;
-        }
+		if (Input.GetButtonDown("Fire1"))
+		{
+			navMeshAgent.ResetPath();
+			if (Physics.Raycast(ray, out hit, 1000))
+			{
+				if (hit.collider.tag == "Enemy")
+				{
+					targetedEnemy = hit.transform;
+					enemyClicked = true;
 
-    }
+					//print("ENEMY HITTED");
+				}
+				else if(hit.collider.tag == "Chest")
+				{
+					objectClicked = true;
+					clickedObject = hit.transform;
+				}
+				else if(hit.collider.tag == "Info")
+				{
+					objectClicked = true;
+					clickedObject = hit.transform;
+				}
+				else
+				{
+					walking = true;
+					enemyClicked = false;
+					navMeshAgent.destination = hit.point;
+					navMeshAgent.isStopped = false;
+				}
+			}
+		}
+
+		if (enemyClicked && doubleClick)
+		{
+			MoveAndAttack();
+		}
+		else if(enemyClicked)
+		{
+			//select enemy
+		}
+		else if (objectClicked && clickedObject.gameObject.tag == "Info")
+		{
+			ReadInfos(clickedObject);
+		}
+		else if (objectClicked && clickedObject.gameObject.tag == "Chest")
+		{
+			OpenChest(clickedObject);
+		}
+		else
+		{
+			if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance )
+			{
+				walking = false;
+			}
+			else if(!navMeshAgent.pathPending && navMeshAgent.remainingDistance >= navMeshAgent.stoppingDistance )
+			{
+				walking = true;
+			}
+		}
+
+		anim.SetBool("isWalking", walking);
+
+	}
+
+	void MoveAndAttack()
+	{
+		if (targetedEnemy == null)
+		{
+			return;
+		}
+		navMeshAgent.destination = targetedEnemy.position;
+
+		if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance > attackDistance)
+		{
+			navMeshAgent.isStopped = false;
+			walking = true;
+		}
+		else if(!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= attackDistance)
+		{
+			anim.SetBool("isAttacking",false);
+			transform.LookAt(targetedEnemy);
+			Vector3 dirToAttack = targetedEnemy.transform.position - transform.position;
+
+			if (Time.time > nextAttack)
+			{
+				nextAttack = Time.time + attackRate;
+				//CALL THE ATTACK WITH THE DIRTOATTACK
+				anim.SetBool("isAttacking",true);
+			}
+			navMeshAgent.isStopped = true;
+			walking = false;
+		}
+	}
+		
+	void ReadInfos(Transform target)
+	{
+		//set target
+		navMeshAgent.destination = target.position;
+		//go close
+		if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance > attackDistance)
+		{
+			navMeshAgent.isStopped = false;
+			walking = true;
+		}
+		//then read
+		else if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= attackDistance)
+		{
+			navMeshAgent.isStopped = true;
+			transform.LookAt(target);
+			walking = false;
+
+			//print an info
+			print(target.GetComponent<Infos>().info);
+
+			objectClicked = false;
+			navMeshAgent.ResetPath();
+		}
+
+	}
+
+	void OpenChest(Transform target)
+	{
+		//set target
+		navMeshAgent.destination = target.position;
+		//go close
+		if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance > attackDistance)
+		{
+			navMeshAgent.isStopped = false;
+			walking = true;
+		}
+		//then read
+		else if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= attackDistance)
+		{
+			navMeshAgent.isStopped = true;
+			transform.LookAt(target);
+			walking = false;
+
+			//play animatiion
+			target.gameObject.GetComponentInChildren<Animator>().SetTrigger("Play");
+			//print(target.GetComponent<Infos>().info);
+
+			objectClicked = false;
+			navMeshAgent.ResetPath();
+		}
+
+	}
+
+	void CheckDoubleClick()
+	{
+		if (Input.GetButtonDown("Fire1"))
+		{
+			if (!oneClick)
+			{
+				oneClick = true;
+				timerForDoubleClick = Time.time;
+			}
+			else
+			{
+				oneClick = false;
+				doubleClick = true;
+			}
+		}
+
+		if (oneClick)
+		{
+			if ((Time.time - timerForDoubleClick) > delay)
+			{
+				oneClick = false;
+				doubleClick = false;
+			}
+		}
+	}
 }
