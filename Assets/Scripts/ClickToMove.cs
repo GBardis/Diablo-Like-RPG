@@ -103,8 +103,33 @@ public class ClickToMove : MonoBehaviour {
 			}
 		}
 
-		anim.SetBool("isWalking", walking);
+		//anim.SetBool("isWalking", walking);
 
+        //handle shift press
+        if(Input.GetKey(KeyCode.LeftShift))
+        {
+            //toggle running
+            navMeshAgent.speed = 7f;
+            anim.SetBool("isRunning", walking);
+            anim.SetBool("isWalking", false);
+        }
+        else
+        {
+            //toggle running
+            navMeshAgent.speed = 3.5f;
+            anim.SetBool("isRunning", false);
+            anim.SetBool("isWalking", walking);
+        }
+
+
+        if (!walking)
+        {
+            anim.SetBool("isIdling", true);
+        }
+        else
+        {
+            anim.SetBool("isIdling", false);
+        }
 	}
 
 	void MoveAndAttack()
