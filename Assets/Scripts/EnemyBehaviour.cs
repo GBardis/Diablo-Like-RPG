@@ -31,6 +31,7 @@ public class EnemyBehaviour : MonoBehaviour {
         animator = GetComponentInChildren<Animator>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         targetPlayer = PlayerManager.instance.ourPlayer.transform;
+
 	}
 	
 	// Update is called once per frame
