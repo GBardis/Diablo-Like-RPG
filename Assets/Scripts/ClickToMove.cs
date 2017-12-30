@@ -153,6 +153,8 @@ public class ClickToMove : MonoBehaviour {
 
 			if (Time.time > nextAttack)
 			{
+                targetedEnemy.GetComponent<Interactable>().Interact();
+
 				nextAttack = Time.time + attackRate;
 				//CALL THE ATTACK WITH THE DIRTOATTACK
 				anim.SetBool("isAttacking",true);

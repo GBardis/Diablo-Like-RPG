@@ -42,12 +42,32 @@ public class SpawnSystem : MonoBehaviour {
         for (int i = 0; i < spawnAmount; i++) //Spawn an amount of enemies if no enemies have been spawned
         {
             //Creates a random position inside the spawn range
-            float xSpawnPos = transform.position.x + Random.Range(-spawnRange, spawnRange);
-            float zSpawnPos = transform.position.z + Random.Range(-spawnRange, spawnRange);
+
+            //SQUARE
+            //float xSpawnPos = transform.position.x + Random.Range(-spawnRange, spawnRange);
+            //float zSpawnPos = transform.position.z + Random.Range(-spawnRange, spawnRange);
 
             //Creates the enemy in the above position
-            Vector3 spawnPoint = new Vector3(xSpawnPos, 0, zSpawnPos);
-            GameObject newEnemy = (GameObject)Instantiate(enemiesToSpawn[Random.Range(0, enemiesToSpawn.Length)], spawnPoint, Quaternion.identity);
+
+            //Vector3 spawnPoint = new Vector3(xSpawnPos, 0, zSpawnPos);
+
+            //CIRCLE
+
+            float theta = 360f * Random.value;
+            float radius = Random.Range(0f, spawnRange);
+
+            Vector3 center = transform.position;
+            Vector3 point = new Vector3(radius * Mathf.Sin(theta), 0, radius * Mathf.Cos(theta));
+
+            Vector3 spawnPoint = center + point;
+
+            //LOOKROTATION
+            
+            float rot = 360f * Random.value;
+            Quaternion spawnRotation = Quaternion.Euler(0, rot, 0);
+
+
+            GameObject newEnemy = (GameObject)Instantiate(enemiesToSpawn[Random.Range(0, enemiesToSpawn.Length)], spawnPoint, spawnRotation);
         }
     }
 
