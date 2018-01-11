@@ -7,7 +7,7 @@ using UnityEngine.AI;
 [RequireComponent(typeof(CapsuleCollider))]
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(NavMeshAgent))]
-public class EnemyBehaviour : MonoBehaviour {
+public class EnemyBehaviour : Interactable {
     //NAV MESH AGENT
     private NavMeshAgent navMeshAgent;
     private Animator animator;
@@ -100,5 +100,12 @@ public class EnemyBehaviour : MonoBehaviour {
 
         Handles.color = Color.red;
         Handles.DrawWireArc(transform.position + new Vector3(0, 0.02f, 0), transform.up, transform.right, 360, attackRadius);
+    }
+
+    public override void Interact()
+    {
+        Debug.Log("Enemy Got Damage");
+
+        base.Interact();
     }
 }
