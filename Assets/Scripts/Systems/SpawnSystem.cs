@@ -1,7 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+#if UNITY_EDITOR 
 using UnityEditor;
+#endif 
 
 public class SpawnSystem : MonoBehaviour {
 
@@ -73,6 +75,7 @@ public class SpawnSystem : MonoBehaviour {
 
     private void OnDrawGizmos()
     {
+    #if UNITY_EDITOR
         //We create a Handler which checks the Detection Range
         Handles.color = Color.blue;
         Handles.DrawWireArc(transform.position, transform.up, transform.right, 360, detectionRange);
@@ -80,6 +83,7 @@ public class SpawnSystem : MonoBehaviour {
         //Same for the Spawn Range
         Handles.color = Color.red;
         Handles.DrawWireArc(transform.position, transform.up, transform.right, 360, spawnRange);
+    #endif
     }
 
 }

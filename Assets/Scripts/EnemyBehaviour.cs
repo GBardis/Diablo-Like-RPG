@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+#if UNITY_EDITOR 
 using UnityEditor;
+#endif 
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -95,11 +97,13 @@ public class EnemyBehaviour : Interactable {
 
     private void OnDrawGizmos()
     {
+    #if UNITY_EDITOR
         Handles.color = Color.yellow;
         Handles.DrawWireArc(transform.position+new Vector3(0,0.02f,0),transform.up,transform.right,360,lookRadius);
 
         Handles.color = Color.red;
         Handles.DrawWireArc(transform.position + new Vector3(0, 0.02f, 0), transform.up, transform.right, 360, attackRadius);
+    #endif
     }
 
     public override void Interact()
